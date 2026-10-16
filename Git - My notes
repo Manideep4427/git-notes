@@ -1,0 +1,310 @@
+git config --global user.name "Asha Rao"
+git config --global user.email "asha@example.com"
+git config --global init.defaultBranch main
+
+git init 
+git status  / git status --short
+git add . 
+git restore --staged <file>  --> undo git add
+git commit -m "First commit"
+
+git log   /  git log --oneline 
+(git log prints the full history, newest first.
+--oneline shows one line per commit.
+-n limits the number of commits shown.)
+git show --> OPen/prints one commit with its full changes.
+git log -p and git log --stat add change details to the log.
+git log -S finds commits that added or removed a string.
+
+-p prints the full added and removed lines under every commit. Detailed, but long.
+--stat prints just a summary per commit: which files changed and how many lines.
+The -S flag finds the commits that added or removed a given string:
+
+Ex: git log -S pineapple --oneline --> I wanted the commit that added or removed pineapple in it
+
+git diff <a> <b> compares two commits.
+HEAD~1 is the commit before the current one.
+HEAD~2 is two commits back.
+
+
+git rev-parse HEAD   --? prints the hash of the current commit
+HEAD resolves to the current commit in any Git command.
+
+
+The git init command turns the current folder into a repository. It creates the .git folder and nothing else.A repository is a folder that Git is tracking. It is a normal folder plus one hidden subfolder named .git, where Git stores the entire history. Folder plus history, together in one place.
+
+The git status command reports what Git currently sees in your repository: which files are new, which are changed, and which are ready to go into the next snapshot. It changes nothing. You will run it constantly, before and after almost every other command
+
+The staging area is a waiting room between your folder and the recorded history. Before Git makes a commit, you first place files into the staging area with git add. Only what is staged goes into the commit.
+The file moved from Untracked files to Changes to be committed. That heading is Git's name for the staging area's contents: this is what the next snapshot will contain. git add prints nothing when it succeeds. git status is how you see the result.
+
+Ex: git add day2.txt
+git status --short
+
+Undo git add .
+The command git restore --staged <file> takes a file back out of the staging area. The file itself is not touched: its content stays exactly as it is in your folder. Only its place in the staging area changes.
+
+A commit is a saved snapshot of your staged files, stored permanently inside the repository. Once you make a commit, that version of your work is recorded and you can return to it at any time.
+A commit records the exact content of every staged file at that moment, plus the date it was made. Git stores it inside .git, and the commit never changes after it is made.
+
+Every commit stores four things:
+
+The snapshot. The full content of every staged file at that moment.
+The message. A short sentence you write that says what changed and why.
+The author. Your name and email, taken from the user.name and user.email settings you configured earlier.
+A pointer to the parent. Each commit remembers which commit came before it. This is how Git builds a chain of history, one commit after another.
+
+git commit -m "Add first journal entry"
+
+git log --oneline -1 --> 
+
+git rev-parse HEAD prints the hash of the current commit.
+HEAD resolves to the current commit in any Git command.
+
+
+READING HISTORY
+
+git log prints the full history, newest first.
+--oneline shows one line per commit.
+-n limits the number of commits shown.
+
+Each entry describes one commit, with four parts:
+
+The hash. The commit's unique id, like 9b1f4c2....
+The author. Who made the commit.
+The date. When the commit was made.
+The message. The one line describing what changed.
+
+git show prints one commit with its full changes.
+EX: git show 3f2a91c
+
+git log -p and git log --stat add change details to the log.
+Two git log flags bring change details into the history view:
+-p prints the full added and removed lines under every commit. Detailed, but long.
+--stat prints just a summary per commit: which files changed and how many lines.
+
+git log -S finds commits that added or removed a string.
+EX: git log -S pineapple --oneline
+This answers a very common question at work: which commit introduced this line?
+
+git diff <a> <b> compares two commits. - A diff is git's report of what changed between two versions of a file: old lines are marked as removed, new lines are marked as added.
+Ex: git diff 3f2a91c 9b1f4c2
+HEAD~1, HEAD~2 name commits counting back from HEAD.
+
+ex: 
+Every diff is built from three kinds of lines:
+
+Lines starting with - are the old version. They exist in the first snapshot but not the second.
+Lines starting with + are the new version.
+Lines starting with a space are unchanged. Git prints a few of them around each change so you can see where in the file it happened.
+
+Three types of git diff
+git diff compares working files against the staging area. It answers: what have I edited but not staged yet?
+git diff --cached compares the staging area against HEAD. It answers: what will my next commit contain?
+git diff HEAD compares working files against HEAD. It answers: what changed in total since the last commit?
+
+The one to remember before every commit is --cached. It shows the exact content of the commit you are about to make, so you can check it before the snapshot is recorded.
+
+Sometimes one file holds two unrelated edits and you want to commit only one of them. The -p flag makes git add interactive:
+git add -p --> gives us option to move to staging to only for required changes
+Stage this hunk [y,n,q,a,d,s,e,?] --> press y --> yes , n --> no and e for edit 
+
+
+Ignoring files 
+
+Git reads a plain text file named .gitignore in the top folder of your repository. Each line is a pattern. Any untracked file that matches a pattern disappears from git status and is skipped by git add ..
+
+EX:
+app.log
+secrets.env
+build/
+
+
+A .gitignore pattern only affects untracked files. If a file was already committed, Git keeps tracking it, and adding its name to .gitignore changes nothing. One command fixes that situation.
+
+Untracking a committed junk file takes three steps:
+
+Add the file's name to .gitignore, so it never comes back.
+Run git rm --cached <file> to take it off the tracking list.
+Commit. This commit records the removal, and from then on the file is invisible to Git.
+After the commit, git status is clean, the file still exists on disk, and git check-ignore <file> confirms Git now ignores it.
+
+
+BRANCH 
+
+Git does not copy your files when you create a branch. A branch is only a small pointer, a name attached to one commit. Creating one is instant and costs almost nothing, even in a huge repository. That is why Git users create branches for everything: one branch per bug fix, per feature, per experiment.
+
+Two commands do the basics. 
+git branch <name> creates a branch, and 
+git branch with no name lists them:
+
+
+$ git switch new-menu
+Switched to branch 'new-menu'
+
+You will usually want to start a branch and move onto it immediately. The -c flag (short for create) does both:
+$ git switch -c fix-hours
+Switched to a new branch 'fix-hours'
+
+Your commit history is a chain of commits, each one linked to the one before it. A branch is a named pointer that stores the id of one commit. main is a pointer. new-menu is a pointer. Committing on a branch adds one commit to the chain and updates that branch's pointer to the new commit's id. The other pointers do not change.
+
+git log --oneline --graph --decorate --all ---> Seeing all branches at once 
+
+
+Merge
+Both branches started from the same commit and then grew their own commits. A merge combines those two lines of commits into one, so a single branch ends up holding the changes made on both sides.
+
+A merge always has a direction. You stand on the branch that should RECEIVE the work, and you name the branch that HAS the work:
+
+git switch main
+git merge add-search
+
+This reads as: "I am on main. Pull the commits from add-search into main." The add-search branch itself is not changed by this. Only main moves.
+
+
+What you need before merging
+Two habits keep merges safe:
+
+Run git status first. Merging with uncommitted changes in your working directory can mix them into the result.
+Run git log --oneline on both branches so you know what is about to come in.
+
+
+
+The two kinds of merge
+By default, Git picks one of two behaviors automatically, based on the shape of the history:
+
+Fast-forward merge. The receiving branch has no new commits of its own. Git simply moves the receiving branch's pointer forward to the tip of the other branch. No new commit is created.
+Note: It simply moves the pointer to the commit that the recieving branch has  
+
+Three-way merge -- When both branches have new commits, git cannot just slide a label forward. It performs a three-way merge: it compares both branch tips against their common starting point, combines the changes, and records the result in a new commit. That new commit is a merge commit.
+
+(Every non-root normal commit has one parent: the commit that came before it. In this usual two-branch merge, the merge commit has TWO parents:
+
+The first parent is the tip of the branch you were standing on.
+The second parent is the tip of the branch you merged in.)
+
+
+
+git switch main
+git merge drinks -m "Merge drinks into main"  --> The -m flag gives the merge commit its message
+
+Ex: 
+*   9f3c2ab Merge drinks into main
+|\
+| * 71d0e4c Add drinks list
+* | 4b8a911 Add desserts list
+|/
+* 2c5f7d0 Start the menu
+
+
+Safe delete branch - git branch -d add-v2-notes
+Force delete branch - git branch -D add-v2-notes
+
+Normal flow -- 
+
+git switch main
+git merge add-v2-notes
+git branch -d add-v2-notes
+
+
+Merge conflicts 
+
+<<<<<<< HEAD starts YOUR side: the version from the branch you were standing on when you ran the merge. This side is often called ours.
+======= is the divider between the two versions.
+>>>>>>> sam-slogan ends THEIR side: the version from the branch you merged in. This side is called theirs. The branch name after the marker tells you where it came from.
+Everything outside the markers merged cleanly and needs no attention. Only the marked block is in dispute.
+
+To resolve, open the file in an editor and rewrite the marked block into the final text you want
+After editing, tell git the file is settled, and finish the merge with a commit:
+
+bash
+
+git add slogan.md
+git commit -m "Merge sam-slogan, combine both slogans"
+
+
+
+Taking one whole side
+Sometimes you do not want to mix. One side is simply right for a given file. Git can pick a whole side for you:
+
+bash
+
+git checkout --theirs config.yaml
+git checkout --ours README.md
+git add config.yaml README.md
+--theirs replaces the file with the incoming branch's version, and --ours with your branch's version. You still git add the files and commit to finish, the same as with hand editing.
+
+
+The git merge --abort command cancels a conflicted merge and returns the repository to the exact state it had before you ran git merge. Nothing from the attempted merge remains.
+
+
+
+UNDOING CHANGES
+git restore throws away a bad edit in your working files. Nothing was committed yet. This is the gentlest undo.
+(Two warnings
+The edit is gone for good. Git may still have committed or staged versions, but it cannot bring back an edit that existed only in the working directory before you restored over it.
+It works per tracked path. git restore . discards edits in tracked files under the current directory. It does not remove untracked files. Prefer naming the exact file you want to reset.)
+
+git commit --amend fixes the last commit you made: a typo in the message, or a file you forgot to include.
+(You use it for two everyday mistakes:
+You made a typo in the commit message.
+You forgot to include a file in the commit.
+
+Amending does not stack a new commit on top. It takes the last commit apart, adds your correction, and seals a fresh commit in its place. The commit count stays the same, but the commit gets a new hash, because a commit's hash is a fingerprint of its content.)
+
+git reset moves your branch back to an earlier commit, removing the last few commits from that branch's visible history.
+
+((The three modes
+--soft: the branch moves back. All the abandoned changes stay staged, ready to commit again.
+--mixed (the default): the branch moves back. The abandoned changes stay in your working files, but unstaged.
+--hard: the branch moves back and tracked changes are discarded from the staging area and working files. Untracked files normally remain.)
+)
+
+git revert adds a new commit that cancels out an old one. The old commit stays in history.
+(This is the big difference from reset:
+
+reset erases commits from your branch. History gets shorter.
+revert cancels a commit with a fresh one. History gets longer by one commit, and the old commit is not removed.
+
+Anyone reading the log later sees both the mistake and the fix: the bad commit stays where it was, and the revert commit on top records exactly when and how it was cancelled.)
+
+Ex: git revert --no-edit 7c3d902
+git log --oneline
+
+The --no-edit flag accepts the automatic message (Revert "...") without opening an editor. The bad change is gone from the files, the bad commit is still in the log, and the revert commit sits on top.
+
+NOTE:
+restore, amend, and reset rewrite or discard work. They are safe while the work is only on your machine. --> Rewrites history 
+revert adds to history. It does not remove the old commit from history, so it is usually the safe choice once a commit has been shared.
+
+git reflog 
+IT lists every commit your branches have pointed at recently, including the ones an undo dropped, so a commit you removed by mistake is usually still findable for a while. It is a rescue tool, not a plan: treat every undo as final and use the reflog only when one goes wrong.
+
+
+STASH & TAGS
+The git stash command saves your tracked uncommitted changes inside the repository and gives you a clean working tree. Untracked files need git stash -u. Later, git stash pop reapplies the changes to your working tree; add --index when you also need the original staged state restored.
+
+You need this when urgent work interrupts unfinished work. You are halfway through an edit, it is nowhere near ready to commit, and suddenly a production bug needs a fix on a clean tree. You stash the half-finished edit, commit the fix on the clean tree, then pop the stash and continue where you stopped.
+
+COmmands:
+git stash saves tracked uncommitted changes (staged and unstaged) and cleans the working tree. Use -u for untracked files.
+git stash list shows every stash entry you have saved.
+git stash pop re-applies the most recent stash to your files and removes it from the list when it applies cleanly.
+
+git stash
+git status --short
+git stash list
+git stash pop
+git status --short
+
+
+TAG
+A tag is a name attached to one commit. A branch name is a pointer that moves forward with every new commit. A tag points at one commit until someone deliberately replaces it. Teams keep release tags fixed by convention, so they identify the exact commit that shipped as version 1.0.
+
+Two kinds of tags
+A lightweight tag is just the name and the commit hash, nothing else: git tag v0.1.
+An annotated tag is a full object with its own message, tagger, and date. You create it with -a and -m:
+
+Tagging older commit  - git tag -a v1.0 -m "First production release" 4a7d1c2
+
+
