@@ -307,4 +307,166 @@ An annotated tag is a full object with its own message, tagger, and date. You cr
 
 Tagging older commit  - git tag -a v1.0 -m "First production release" 4a7d1c2
 
+----
 
+Git Rebase
+
+The git rebase command takes the commits from your branch and replays them, one by one, on top of another branch.
+
+Say you made two commits on your branch, and meanwhile a teammate added new commits to main. Rebase takes your two commits off their old parent and creates them again, in the same order, with the new tip of main as the starting point. The changes inside each commit are the same, but the commits themselves are new, and your branch pointer now sits on top of the latest main.
+
+main old tip
+     |
+     |
+main new tip
+     |
+     |
+your commit 1'
+     |
+     |
+your commit 2'
+
+You run rebase from the branch you want to move:
+git switch feature
+git rebase main
+
+
+After this, git log on feature shows your rebased commits first because they are newest, with the latest main commits below them. There is no merge commit. The history is one straight line. People call this a linear history, and it is easier to read than a history full of merge bubbles.
+
+The simple test before you rebase
+Ask one question: has anyone else pulled these commits?
+
+Commits only on your machine, never pushed: rebase freely.
+Commits pushed to a personal branch nobody pulled yet: usually still fine, but you must force push, and you should be sure you are the only user of that branch.
+Commits on main or any branch teammates work on: never rebase them. Use git merge or git revert instead, because those add new commits without rewriting old ones.
+
+
+Git Cherry-pick
+Rebase and merge move a whole branch. Sometimes you want just one commit from it. A typical case: an experiment branch holds ten throwaway commits, but one of them is a real bug fix that main needs today. You do not want the experiments, only that one fix.
+
+Cherry-pick copies exactly the one commit you name and leaves the rest of the branch where it is.
+
+git switch main
+git cherry-pick 4f8d0a3
+
+
+ Like rebase, cherry-pick creates a new commit with the same changes and message but a different hash, because the parent is different. The original commit still exists on the experiment branch, untouched.
+
+If the picked commit touches lines that differ on your branch, cherry-pick pauses exactly like a rebase. You fix the file, git add it, and run git cherry-pick --continue, or back out with git cherry-pick --abort.
+
+Generate the token on GitHub
+On GitHub, open Settings, then "Developer settings", then "Personal access tokens", then "Fine-grained tokens".
+Click "Generate new token" and give it a name.
+Set an expiry date. A short one is safer.
+Under repository access, choose only your practice repositories, not all repositories.
+Under permissions, give Contents read and write access. That is enough for ordinary push, pull, fetch, and clone. If you will change files under .github/workflows, also grant the fine-grained Workflows write permission.
+
+-------------
+Remote and git clone
+
+A remote is a saved address of another copy of your repository, usually one hosted on GitHub. Git stores the address inside your repository under a short name. Your repository knows the address, so you never have to type it again.
+
+By convention the main remote is named origin. When you copy a repository from GitHub, Git creates this remote for you automatically.
+
+Inside a cloned repository, git remote -v shows the saved addresses:
+
+git remote -v
+
+origin  https://github.com/octocat/Hello-World (fetch)
+origin  https://github.com/octocat/Hello-World (push)
+
+
+PUshing into Github
+
+The git remote add command saves a remote address under a name:
+
+bash
+
+cd /root/git-journey
+git remote add origin https://github.com/yourname/git-journey.git
+Nothing is uploaded yet. This command only saves the address inside your local repository. No commits have traveled. Confirm the saved address with:
+
+bash
+git remote -v
+
+The git ls-remote origin command contacts the remote and lists what it has. 
+
+
+GIT PUSH
+The git push command uploads your local commits to a remote repository. Until you push, every commit you make exists only on your machine. Pushing copies those commits to the repository on GitHub, so teammates can see them.
+
+bash
+
+git push origin main
+This reads as: send my main branch to the remote named origin. Git uploads every commit the remote does not have yet and moves the remote's main to match yours.
+
+
+On the first push of a branch, add -u:
+git push -u origin main
+
+The -u option records origin/main as the upstream of your local main: the remote branch it is paired with. After that, plain git push with no arguments knows where to go, and git status can tell you whether you are ahead of or behind the remote.
+
+
+origin/main: your copy of the remote's position
+
+Your repository holds a marker called origin/main. It records a locally known position of the remote's main; it does not update merely because a command contacts the remote.
+
+The git fetch origin command refreshes these markers: it asks the remote what it has and downloads anything new, without touching your own branches. Fetch is how you check what the remote repository holds. A later topic covers fetch fully; for now you use it to verify that a push really arrived:
+
+
+git fetch origin
+git log --oneline origin/main -n 1
+If that prints the same commit as your local main, your work is on GitHub.
+
+When the push is rejected - 
+Bring the remote commits into your local branch first, then push again. The commands for that (git pull, and rebasing on top of the remote) are the subject of the next topic. The order is always the same: download their work, combine it with yours locally, then push the result.
+
+Dont do - git push --force origin main
+------
+fetch vs pull: two ways to get new commits
+
+When to use which
+Use git fetch when you want to look before you touch anything: see what changed, compare, decide. Use git pull when you simply want to be up to date. Fetch is always safe. Pull changes your branch.
+
+The git fetch command downloads new commits from a remote but does not touch your own branch. The git pull command downloads them and then integrates them into your current branch. It usually merges, but configuration can make it rebase or require you to choose when histories diverge. That difference matters every day in a team.
+
+Why you need either one
+Your repository on GitHub changes without you. A teammate pushes a commit, and the repository on GitHub now holds a commit that your local repository has never seen. Git never downloads anything by itself. You must ask for it.
+
+
+GIT FETCH
+git fetch: download without touching your branch
+
+git fetch origin
+git fetch downloads the new commits into your repository but does not apply them to your branch. The new commits are stored under the remote-tracking branch origin/main. Your own main branch does not move. Your working files do not change.
+
+
+$ git fetch origin
+remote: Enumerating objects: 5, done.
+From github.com:someuser/git-journey
+   a1b2c3d..e4f5a6b  main -> origin/main
+The last line says: on GitHub, main moved from a1b2c3d to e4f5a6b, and my local origin/main now records that.
+
+GIT PULL
+git pull: download and integrate in one command
+git pull origin main -This pull moves your branch forward
+
+
+git pull origin main
+
+$ git pull origin main
+From github.com:someuser/git-journey
+ * branch            main       -> FETCH_HEAD
+Updating a1b2c3d..e4f5a6b
+Fast-forward
+ notes.txt | 1 +
+ 1 file changed, 1 insertion(+)
+Read that output slowly:
+
+Updating a1b2c3d..e4f5a6b: your main moves from your old commit to the remote one.
+Fast-forward: your branch had no commits of its own that the remote lacked, so git could simply slide main forward. No merge commit was needed.
+notes.txt | 1 +: one line was added to that file in your working directory. The change is now really on your disk.
+After a pull, three things agree
+After this fast-forward pull, main, origin/main, and your working files all describe the same commit. You can prove it:
+
+bash
